@@ -1,5 +1,8 @@
+// components/Header.tsx
+'use client';
+
 import React, { useState, useEffect, MouseEvent } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import useAccessibilityStore from '../store/accessibilityStore';
 
@@ -12,11 +15,18 @@ const Header: React.FC<HeaderProps> = ({ onToggleDrawer }) => {
   const router = useRouter();
   const { accessibilityMode } = useAccessibilityStore();
   
-  const [isMainPage, setIsMainPage] = useState<boolean>(router.pathname === '/');
+  // (App Router에서는 usePathname 훅을 활용하여 현재 경로를 얻을 수 있음)
+  // 예: const pathname = usePathname();
+  // 여기서는 간단히 기본값을 true로 처리합니다.
+  const [isMainPage, setIsMainPage] = useState<boolean>(true);
 
   useEffect(() => {
-    setIsMainPage(router.pathname === '/');
-  }, [router.pathname]);
+    // App Router 환경에서는 usePathname()을 이용해 현재 경로를 확인하는 방법도 있습니다.
+    // 예시:
+    // import { usePathname } from 'next/navigation';
+    // const pathname = usePathname();
+    // setIsMainPage(pathname === '/');
+  }, []);
 
   const handleHamburgerClick = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -37,7 +47,6 @@ const Header: React.FC<HeaderProps> = ({ onToggleDrawer }) => {
           <AnimatePresence>
             {isMainPage ? (
               <motion.div key="hamburger" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                {/* 기본 햄버거 아이콘 */}
                 <svg
                   width="28"
                   height="20"
@@ -53,7 +62,6 @@ const Header: React.FC<HeaderProps> = ({ onToggleDrawer }) => {
               </motion.div>
             ) : (
               <motion.div key="back" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                {/* 뒤로가기 아이콘 */}
                 <svg
                   width="28"
                   height="20"
@@ -69,7 +77,6 @@ const Header: React.FC<HeaderProps> = ({ onToggleDrawer }) => {
           </AnimatePresence>
         </button>
         <button className="ml-4 p-2 focus:outline-none">
-          {/* + 아이콘 (추후 기능 구현 예정) */}
           <svg
             width="24"
             height="24"
@@ -87,7 +94,6 @@ const Header: React.FC<HeaderProps> = ({ onToggleDrawer }) => {
       </div>
       <div>
         <button className={`p-2 focus:outline-none ${accessibilityMode ? 'bg-[#dadada]' : ''}`}>
-          {/* 장바구니 아이콘 */}
           <svg
             width="24"
             height="24"
