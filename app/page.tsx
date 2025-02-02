@@ -18,8 +18,7 @@ const Home: React.FC = () => {
 
   return (
     <div className="min-h-screen pt-16">
-      <Header onToggleDrawer={toggleDrawer} isDrawerOpen={isDrawerOpen} />
-      <Drawer isOpen={isDrawerOpen} onClose={closeDrawer} />
+      <Header />
       <main className="p-4">
         <h1 className="text-2xl font-bold">Welcome to the E-commerce Site</h1>
         <p>Main content goes here.</p>
@@ -29,3 +28,4 @@ const Home: React.FC = () => {
 };
 
 export default Home;
+
