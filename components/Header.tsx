@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, MouseEvent } from 'react';
+import React, { useState, MouseEvent, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import useAccessibilityStore from '../store/accessibilityStore';
 import Drawer from './Drawer';
@@ -12,37 +12,55 @@ const Header: React.FC = () => {
   const pathname = usePathname();
   const { accessibilityMode } = useAccessibilityStore();
 
-  // 메인 페이지 여부 (메인 페이지에서만 드로어 토글)
+  // 메인 페이지인지 여부
   const isMainPage = pathname === '/';
 
-  // 드로어 열림 상태 (메인 페이지일 때만 의미 있음)
+  // 드로어 열림 상태(메인 페이지에서만 의미 있게 사용됨)
   const [openDrawer, setOpenDrawer] = useState<boolean>(false);
 
-  const toggleDrawer = (e: MouseEvent) => {
+  // 메인 페이지를 벗어날 경우 자동으로 Drawer를 닫아준다(선택 사항)
+  useEffect(() => {
+    if (!isMainPage) {
+      setOpenDrawer(false);
+    }
+  }, [isMainPage]);
+
+  // 햄버거(메뉴) 버튼 클릭 핸들러
+  const handleHamburgerClick = (e: MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
-    setOpenDrawer((prev) => !prev);
+
+    if (isMainPage) {
+      // 메인 페이지에서는 Drawer 열기/닫기
+      setOpenDrawer((prev) => !prev);
+    } else {
+      // 메인 페이지가 아닐 때는 뒤로가기
+      router.back();
+    }
   };
 
+  // 장바구니 버튼 클릭 시 이동
   const handleNavigation = (path: string, e: MouseEvent) => {
     e.stopPropagation();
     router.push(path);
   };
 
+  // 메인 페이지가 아닐 때는 항상 'open' 클래스를 줘서 아이콘을 '뒤로가기' 형태처럼 보이게 만든다
+  const hamburgerButtonClass = isMainPage 
+    ? (openDrawer ? 'open' : '') 
+    : 'open';
+
   return (
     <header className="relative flex items-center justify-between px-6 py-3 h-12 bg-white">
-      {/* 왼쪽 블록: 메뉴 버튼, 타이틀, 플러스 버튼 */}
+      {/* 왼쪽 영역: 메뉴 버튼 + (메인 페이지이면서 Drawer 닫힘 시) 플러스 버튼 */}
       <div className="flex w-full items-center">
-        {/* 메뉴 버튼 (SCSS 적용) */}
         <summary
-          className={`menu-button z-30 bg-contrast ${openDrawer ? 'open' : ''}`}
+          className={`menu-button z-30 bg-contrast ${hamburgerButtonClass}`}
           aria-haspopup="dialog"
           aria-label="Open Menu"
           data-type="menu"
           role="button"
-          onClick={(e) => {
-            e.preventDefault();
-            toggleDrawer(e);
-          }}
+          onClick={handleHamburgerClick}
         >
           <div className="menu-button__icon">
             <div className="menu-button__bar menu-button__bar--1"></div>
@@ -50,7 +68,7 @@ const Header: React.FC = () => {
           </div>
         </summary>
 
-        {/* 플러스 버튼: 메인 페이지에서 드로어가 닫혔을 때 보임 */}
+        {/* 플러스 버튼: 메인 페이지에서 Drawer가 닫혀있을 때만 노출 */}
         {isMainPage && !openDrawer && (
           <button className="ml-1 p-2 focus:outline-none">
             <FiPlus size={22} />
@@ -58,20 +76,17 @@ const Header: React.FC = () => {
         )}
       </div>
 
-      {/* 오른쪽 블록: 쇼핑카트 아이콘 */}
+      {/* 오른쪽 영역: 쇼핑카트 아이콘 */}
       <div className="flex-shrink-0">
         <button
           className={`p-2 focus:outline-none ${accessibilityMode ? 'bg-[#dadada]' : ''}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            handleNavigation("/cart", e);
-          }}
+          onClick={(e) => handleNavigation("/cart", e)}
         >
           <FiShoppingCart size={24} />
         </button>
       </div>
 
-      {/* 드로어: 메인 페이지일 때 드로어 열림 상태면 렌더링 */}
+      {/* 메인 페이지라면 Drawer 컴포넌트 렌더링 */}
       {isMainPage && (
         <Drawer isOpen={openDrawer} onClose={() => setOpenDrawer(false)} />
       )}

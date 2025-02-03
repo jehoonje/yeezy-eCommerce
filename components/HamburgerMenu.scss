@@ -15,7 +15,8 @@
     border-radius: 9999px;
     /* clip-path inset(상, 우, 하, 좌) – 좌측 50%는 감추기 */
     clip-path: inset(0 0 0 17%);
-    transition: clip-path 0.3s;
+    // transition: clip-path 0.3s;
+    transition: none; 
   }
 }
 
