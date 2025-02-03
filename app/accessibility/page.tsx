@@ -1,3 +1,6 @@
+// app/accessibility/page.tsx
+'use client';
+
 import React from 'react';
 import Header from '../../components/Header';
 import useAccessibilityStore from '../../store/accessibilityStore';
