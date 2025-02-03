@@ -1,115 +1,95 @@
-// components/Header.tsx
 'use client';
 
-import React, { useState, useEffect, MouseEvent } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, MouseEvent, useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import useAccessibilityStore from '../store/accessibilityStore';
+import Drawer from './Drawer';
+import { FiPlus, FiShoppingCart } from 'react-icons/fi';
+import "./HamburgerMenu.scss"; // SCSS 파일 import
 
-interface HeaderProps {
-  onToggleDrawer?: () => void;
-  isDrawerOpen?: boolean;
-}
-
-const Header: React.FC<HeaderProps> = ({ onToggleDrawer }) => {
+const Header: React.FC = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const { accessibilityMode } = useAccessibilityStore();
-  
-  // (App Router에서는 usePathname 훅을 활용하여 현재 경로를 얻을 수 있음)
-  // 예: const pathname = usePathname();
-  // 여기서는 간단히 기본값을 true로 처리합니다.
-  const [isMainPage, setIsMainPage] = useState<boolean>(true);
 
+  // 메인 페이지인지 여부
+  const isMainPage = pathname === '/';
+
+  // 드로어 열림 상태(메인 페이지에서만 의미 있게 사용됨)
+  const [openDrawer, setOpenDrawer] = useState<boolean>(false);
+
+  // 메인 페이지를 벗어날 경우 자동으로 Drawer를 닫아준다(선택 사항)
   useEffect(() => {
-    // App Router 환경에서는 usePathname()을 이용해 현재 경로를 확인하는 방법도 있습니다.
-    // 예시:
-    // import { usePathname } from 'next/navigation';
-    // const pathname = usePathname();
-    // setIsMainPage(pathname === '/');
-  }, []);
-
-  const handleHamburgerClick = (e: MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
     if (!isMainPage) {
-      router.back();
+      setOpenDrawer(false);
+    }
+  }, [isMainPage]);
+
+  // 햄버거(메뉴) 버튼 클릭 핸들러
+  const handleHamburgerClick = (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (isMainPage) {
+      // 메인 페이지에서는 Drawer 열기/닫기
+      setOpenDrawer((prev) => !prev);
     } else {
-      onToggleDrawer && onToggleDrawer();
+      // 메인 페이지가 아닐 때는 뒤로가기
+      router.back();
     }
   };
 
+  // 장바구니 버튼 클릭 시 이동
+  const handleNavigation = (path: string, e: MouseEvent) => {
+    e.stopPropagation();
+    router.push(path);
+  };
+
+  // 메인 페이지가 아닐 때는 항상 'open' 클래스를 줘서 아이콘을 '뒤로가기' 형태처럼 보이게 만든다
+  const hamburgerButtonClass = isMainPage 
+    ? (openDrawer ? 'open' : '') 
+    : 'open';
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md flex justify-between items-center px-4 h-16">
-      <div className="flex items-center">
-        <button
+    <header className="relative flex items-center justify-between px-6 py-3 h-12 bg-white">
+      {/* 왼쪽 영역: 메뉴 버튼 + (메인 페이지이면서 Drawer 닫힘 시) 플러스 버튼 */}
+      <div className="flex w-full items-center">
+        <summary
+          className={`menu-button z-30 bg-contrast ${hamburgerButtonClass}`}
+          aria-haspopup="dialog"
+          aria-label="Open Menu"
+          data-type="menu"
+          role="button"
           onClick={handleHamburgerClick}
-          className={`p-2 focus:outline-none ${accessibilityMode ? 'bg-[#dadada]' : ''}`}
         >
-          <AnimatePresence>
-            {isMainPage ? (
-              <motion.div key="hamburger" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <svg
-                  width="28"
-                  height="20"
-                  viewBox="0 0 28 20"
-                  fill="none"
-                  stroke="#000"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M2 4H26" strokeWidth="2" strokeLinecap="round" />
-                  <path d="M2 10H26" strokeWidth="2" strokeLinecap="round" />
-                  <path d="M2 16H26" strokeWidth="2" strokeLinecap="round" />
-                </svg>
-              </motion.div>
-            ) : (
-              <motion.div key="back" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <svg
-                  width="28"
-                  height="20"
-                  viewBox="0 0 28 20"
-                  fill="none"
-                  stroke="#000"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M20 2L8 10L20 18" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </button>
-        <button className="ml-4 p-2 focus:outline-none">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#000"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
+          <div className="menu-button__icon">
+            <div className="menu-button__bar menu-button__bar--1"></div>
+            <div className="menu-button__bar menu-button__bar--2"></div>
+          </div>
+        </summary>
+
+        {/* 플러스 버튼: 메인 페이지에서 Drawer가 닫혀있을 때만 노출 */}
+        {isMainPage && !openDrawer && (
+          <button className="ml-1 p-2 focus:outline-none">
+            <FiPlus size={22} />
+          </button>
+        )}
+      </div>
+
+      {/* 오른쪽 영역: 쇼핑카트 아이콘 */}
+      <div className="flex-shrink-0">
+        <button
+          className={`p-2 focus:outline-none ${accessibilityMode ? 'bg-[#dadada]' : ''}`}
+          onClick={(e) => handleNavigation("/cart", e)}
+        >
+          <FiShoppingCart size={24} />
         </button>
       </div>
-      <div>
-        <button className={`p-2 focus:outline-none ${accessibilityMode ? 'bg-[#dadada]' : ''}`}>
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#000"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="9" cy="21" r="1" />
-            <circle cx="20" cy="21" r="1" />
-            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-          </svg>
-        </button>
-      </div>
+
+      {/* 메인 페이지라면 Drawer 컴포넌트 렌더링 */}
+      {isMainPage && (
+        <Drawer isOpen={openDrawer} onClose={() => setOpenDrawer(false)} />
+      )}
     </header>
   );
 };

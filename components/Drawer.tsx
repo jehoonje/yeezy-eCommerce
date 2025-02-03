@@ -1,7 +1,6 @@
-// components/Drawer.tsx
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import useAccessibilityStore from '../store/accessibilityStore';
@@ -13,36 +12,83 @@ interface DrawerProps {
 
 const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose }) => {
   const { accessibilityMode } = useAccessibilityStore();
-  const drawerVariants = {
-    hidden: { x: '-100%' },
-    visible: { x: 0 },
+
+  // "즉시 닫기"를 위한 state
+  const [instantClose, setInstantClose] = useState(false);
+
+  // variants 정의:
+  //  - closed: 슬라이드 애니메이션으로 닫힘
+  //  - open: 슬라이드 애니메이션으로 열림
+  //  - instantClosed: 애니메이션 없이 바로 사라짐
+  const containerVariants = {
+    open: {
+      x: 95,
+      opacity: 1,
+      scale: 1,
+      transition: { 
+        type: 'spring', 
+        stiffness: 300, 
+        damping: 30 
+      },
+    },
+    closed: {
+      x: 40,
+      opacity: 0,
+      scale: 0.95,
+      transition: { 
+        type: 'spring', 
+        stiffness: 300, 
+        damping: 30,
+        duration: 0.25, // 필요에 따라 조정
+      },
+    },
+    // 즉시 사라지는 상태
+    instantClosed: {
+      x: 40,
+      opacity: 0,
+      scale: 0.95,
+      transition: { duration: 0 }, // 0초!
+    },
   };
 
+  // 어떤 카테고리를 클릭해도 즉시 닫히도록 하려면 아래 처리를 모든 Link에 공통 적용
+  // 만약 "SUPPORT"만 이렇게 하고 싶다면 조건문으로 분기해도 됨
   const categories = [
-    { name: 'HELP', path: '/help' },
+    { name: 'SUPPORT', path: '/help' },
     { name: 'TERMS', path: '/policies/terms-of-service' },
     { name: 'PRIVACY', path: '/policies/privacy-policy' },
-    { name: 'ACCESSIBILLITY', path: '/accessibility' },
+    { name: 'ACCESSIBILITY', path: '/accessibility' },
     { name: 'COOKIES', path: '/policies/cookies' },
   ];
 
+  // 현재 animate 상태 결정
+  // - instantClose가 true 이면 instantClosed
+  // - 아니면, isOpen 이면 open, 아니면 closed
+  const currentVariant = instantClose ? 'instantClosed' : isOpen ? 'open' : 'closed';
+
   return (
     <motion.div
-      initial="hidden"
-      animate={isOpen ? 'visible' : 'hidden'}
-      variants={drawerVariants}
-      transition={{ type: 'tween', duration: 0.3 }}
-      className="fixed top-16 left-0 bottom-0 w-64 bg-white shadow-lg z-40"
+      variants={containerVariants}
+      initial="closed"
+      animate={currentVariant}
+      className="absolute left-0 top-0 h-full flex items-center overflow-hidden"
     >
-      <nav className="mt-4">
-        <ul>
+      <nav>
+        <ul className="flex text-md space-x-9">
           {categories.map((cat) => (
             <li
               key={cat.name}
-              className={`p-4 border-b ${accessibilityMode ? 'underline' : ''}`}
+              className={`${accessibilityMode ? 'underline' : ''}`}
             >
-              <Link href={cat.path}>
-                <a onClick={onClose}>{cat.name}</a>
+              <Link
+                href={cat.path}
+                onClick={() => {
+                  // 페이지 이동 시 즉시 닫히도록
+                  setInstantClose(true);
+                  onClose(); // 부모로부터 내려온 Drawer 닫기
+                }}
+              >
+                {cat.name}
               </Link>
             </li>
           ))}
