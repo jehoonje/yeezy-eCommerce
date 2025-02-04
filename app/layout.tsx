@@ -1,9 +1,10 @@
 // app/layout.tsx
-import '../styles/globals.css';
+import "../styles/globals.css";
+import Header from "../components/Header";
 
 export const metadata = {
-  title: 'My E-commerce App',
-  description: 'An e-commerce site built with Next.js App Router',
+  title: "My E-commerce App",
+  description: "An e-commerce site built with Next.js App Router",
 };
 
 export default function RootLayout({
@@ -13,7 +14,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body>{children}</body>
+      <body>
+        <Header />
+        {children}
+      </body>
     </html>
   );
 }
