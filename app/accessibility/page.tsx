@@ -10,7 +10,7 @@ const Accessibility: React.FC = () => {
 
   return (
     <div className="min-h-screen flex justify-center leading-[1.5]">
-      <main className="max-w-[580px] mt-[40px]">
+      <main className="max-w-[660px] mt-[40px] py-10 px-9">
         <div className="text-left">
           <p className="mb-10">ACCESSIBILITY</p>
           <div className="flex justify-between">

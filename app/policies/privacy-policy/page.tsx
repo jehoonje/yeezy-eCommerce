@@ -5,7 +5,7 @@ import React from "react";
 const PrivacyPolicy: React.FC = () => {
   return (
     <div className="min-h-screen flex justify-center leading-[1.5]">
-      <main className="max-w-[660px] py-10 px-9">
+      <main className="max-w-[660px] py-8 px-44 md:px-9">
         <div className="text-left">
           <p className="mb-10">PRIVACY POLICY</p>
           <p className="mb-4">DO NOT SELL MY INFORMATION</p>
