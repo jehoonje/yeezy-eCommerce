@@ -1,27 +1,27 @@
-// app/help/page.tsx
 'use client';
 
 import React from 'react';
-import Header from '../../components/Header';
 
 const Help: React.FC = () => {
   return (
-    <div className="min-h-screen pt-16 p-4">
-      <Header />
-      <main className="mt-8">
-        <div className="max-w-2xl mx-auto text-left">
-          <h1 className="text-3xl font-bold mb-4">HELP</h1>
-          <h2 className="text-xl font-semibold mb-2">ALL SALES FINAL</h2>
-          <p className="mb-4">
+    <div className="min-h-screen flex justify-center leading-[1.5]">
+      <main className="max-w-[660px] py-8 px-9">
+        <div className="text-left">
+          <p className="mb-10">SUPPORT</p>
+
+          {/* 문단 간 간격 조정 */}
+          <p className="mb-10">ALL SALES FINAL</p>
+          <p className="mb-10">
             All sales are final due to the low cost of goods. We do not offer returns,
             exchanges, or refunds. Please review your order carefully before completing your
             purchase.
           </p>
-          <h2 className="text-xl font-semibold mb-2">ORDER ISSUES</h2>
-          <p>
-            For any issues with your order (e.g., wrong item or defective product), contact us
-            at help@yeezy.com
-            <br />
+
+          <p className="mb-10">ORDER ISSUES</p>
+          <p className="mb-4">
+          For any issues with your order (e.g., wrong item or defective product), contact us at help@yeezy.com
+          </p>
+          <p className="mb-10">
             Please include your order number and details of the issue.
           </p>
         </div>
