@@ -1,16 +1,17 @@
 'use client';
 
-import React, { useState, useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import useAccessibilityStore from "../store/accessibilityStore";
+import useZoomStore from "../store/zoomStore";
+import useGridStore from "../store/useGridStore"; // 새로 만든 store
 import dynamic from "next/dynamic";
-import { FiPlus, FiShoppingCart } from "react-icons/fi";
+import { FiPlus, FiShoppingCart, FiArrowLeft } from "react-icons/fi";
 import "./HamburgerMenu.scss";
 
-// Drawer는 메인 페이지일 때만 동적 임포트되도록 구성합니다.
+// Drawer는 기본적으로 그리드 모드(홈 페이지)일 때만 사용합니다.
 const Drawer = dynamic(() => import("./Drawer"), {
   ssr: false,
-  // 로딩 시 빈 노출: 초기 렌더링에 걸리는 시간을 최소화합니다.
   loading: () => null,
 });
 
@@ -18,15 +19,15 @@ const Header: React.FC = () => {
   const router = useRouter();
   const pathname = usePathname();
   const { accessibilityMode } = useAccessibilityStore();
+  const { isZoomMode, setZoomMode } = useZoomStore();
+  const { gridState, setGridState, backGridState } = useGridStore();
 
-  // 메인 페이지 여부 판단
+  // 메인 페이지 여부 (홈 페이지는 항상 "/")
   const isMainPage = pathname === "/";
 
-  // Drawer 열림 상태 및 애니메이션 제어 플래그
-  const [openDrawer, setOpenDrawer] = useState(false);
-  const [disableAnimation, setDisableAnimation] = useState(false);
+  const [openDrawer, setOpenDrawer] = React.useState(false);
+  const [disableAnimation, setDisableAnimation] = React.useState(false);
 
-  // 페이지 전환 시 Drawer 상태 및 애니메이션 플래그 업데이트
   useEffect(() => {
     if (!isMainPage) {
       setOpenDrawer(false);
@@ -36,23 +37,38 @@ const Header: React.FC = () => {
     }
   }, [isMainPage]);
 
-  // 햄버거 버튼 클릭 핸들러 (최소한의 로직만 남김)
+  // 왼쪽 버튼 클릭
   const handleHamburgerClick = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
 
-      if (isMainPage) {
-        setOpenDrawer((prev) => !prev);
+      if (isZoomMode) {
+        setZoomMode(false);
+      } else if (isMainPage) {
+        if (gridState !== "grid9") {
+          // 뒤로가기: gridState가 grid1이면 grid3로, gridState가 grid3이면 grid9로 전환
+          backGridState();
+        } else {
+          setOpenDrawer((prev) => !prev);
+        }
       } else {
         setDisableAnimation(true);
         router.back();
       }
     },
-    [isMainPage, router]
+    [isZoomMode, isMainPage, gridState, router, setZoomMode, backGridState]
   );
 
-  // 장바구니 버튼 클릭 핸들러
+  // 플러스 버튼 클릭
+  const handlePlusClick = useCallback(() => {
+    if (gridState === "grid9") {
+      setGridState("grid3");
+    } else if (gridState === "grid3") {
+      setGridState("grid1");
+    }
+  }, [gridState, setGridState]);
+
   const handleNavigation = useCallback(
     (path: string, e: React.MouseEvent) => {
       e.stopPropagation();
@@ -62,44 +78,46 @@ const Header: React.FC = () => {
     [router]
   );
 
-  // 클래스 계산 로직을 메모이제이션하여 불필요한 재계산을 피함
   const effectiveHamburgerClass = useMemo(() => {
     if (disableAnimation) return "open";
-    if (isMainPage) return openDrawer ? "open" : "";
+    if (isMainPage && !isZoomMode && gridState === "grid9")
+      return openDrawer ? "open" : "";
     return "open";
-  }, [disableAnimation, isMainPage, openDrawer]);
+  }, [disableAnimation, isMainPage, openDrawer, isZoomMode, gridState]);
 
   return (
     <header className="relative sticky top-0 flex items-center justify-between px-6 py-3 h-12 bg-white">
-      {/* 왼쪽 영역: 메뉴 버튼과 플러스 버튼 */}
       <div className="flex w-full items-center">
         <summary
           className={`menu-button z-30 ${
             accessibilityMode ? "bg-[#dadada]" : "bg-contrast"
           } ${effectiveHamburgerClass} ${disableAnimation ? "no-animation" : ""}`}
           aria-haspopup="dialog"
-          aria-label="Open Menu"
+          aria-label={isZoomMode || gridState !== "grid9" ? "뒤로가기" : "Open Menu"}
           data-type="menu"
           role="button"
           onClick={handleHamburgerClick}
         >
-          <div className="menu-button__icon-wrapper">
-            <div className="menu-button__icon">
-              <div className="menu-button__bar menu-button__bar--1"></div>
-              <div className="menu-button__bar menu-button__bar--2"></div>
+          {isZoomMode || gridState !== "grid9" ? (
+            <FiArrowLeft size={24} />
+          ) : (
+            <div className="menu-button__icon-wrapper">
+              <div className="menu-button__icon">
+                <div className="menu-button__bar menu-button__bar--1"></div>
+                <div className="menu-button__bar menu-button__bar--2"></div>
+              </div>
             </div>
-          </div>
+          )}
         </summary>
 
-        {/* 메인 페이지일 때만 플러스 버튼 렌더링 */}
-        {isMainPage && !openDrawer && !disableAnimation && (
-          <button className="ml-1 p-2 focus:outline-none">
+        {/* 플러스 버튼: gridState가 "grid9" 또는 "grid3"일 때만 보임 */}
+        {isMainPage && !openDrawer && !disableAnimation && !isZoomMode && (gridState === "grid9" || gridState === "grid3") && (
+          <button className="ml-1 p-2 z-9999 focus:outline-none" onClick={handlePlusClick}>
             <FiPlus size={22} />
           </button>
         )}
       </div>
 
-      {/* 오른쪽 영역: 쇼핑카트 버튼 */}
       <div className="flex-shrink-0">
         <button
           className={`p-2 focus:outline-none ${
@@ -111,8 +129,7 @@ const Header: React.FC = () => {
         </button>
       </div>
 
-      {/* 메인 페이지일 때만 Drawer 렌더링 */}
-      {isMainPage && (
+      {isMainPage && !isZoomMode && gridState === "grid9" && (
         <Drawer
           isOpen={openDrawer}
           onClose={() => {

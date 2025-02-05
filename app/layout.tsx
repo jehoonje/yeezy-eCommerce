@@ -1,6 +1,6 @@
-// app/layout.tsx
 import "../styles/globals.css";
 import Header from "../components/Header";
+import { AnimatePresence } from "framer-motion";
 
 export const metadata = {
   title: "My E-commerce App",
@@ -16,7 +16,10 @@ export default function RootLayout({
     <html lang="ko">
       <body>
         <Header />
-        {children}
+        {/* 페이지 전환 시 애니메이션 효과를 주기 위한 AnimatePresence */}
+        <AnimatePresence mode="wait">
+          {children}
+        </AnimatePresence>
       </body>
     </html>
   );
