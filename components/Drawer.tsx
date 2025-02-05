@@ -23,51 +23,77 @@ const Drawer: React.FC<DrawerProps> = React.memo(
     }, []);
 
     const containerVariants = useMemo(() => {
-      if (isMobile) {
-        return {
-          open: {
-            x: 10,
-            y: 0,
-            opacity: 1,
-            scale: 1,
-            pointerEvents: "auto",
-            transition: disableAnimation
-              ? { duration: 0 }
-              : { type: "spring", stiffness: 300, damping: 30 },
-          },
-          closed: {
-            x: isMobile ? 0 : 40,
-            y: "-100%",
-            opacity: 0,
-            scale: 0.95,
-            pointerEvents: "none",
-            transition: disableAnimation
-              ? { duration: 0 }
-              : { type: "spring", stiffness: 300, damping: 30, duration: 0.25 },
-          },
+      const variants: {
+        open: {
+          x: number;
+          y?: number;
+          opacity: number;
+          scale: number;
+          pointerEvents: "auto" | "none";
+          transition: {
+            duration?: number;
+            type?: string;
+            stiffness?: number;
+            damping?: number;
+          };
         };
-      } else {
-        return {
-          open: {
-            x: 95,
-            opacity: 1,
-            scale: 1,
-            pointerEvents: "auto",
-            transition: disableAnimation
-              ? { duration: 0 }
-              : { type: "spring", stiffness: 300, damping: 30 },
-          },
-          closed: {
-            x: 40,
-            opacity: 0,
-            scale: 0.95,
-            pointerEvents: "none",
-            transition: disableAnimation
-              ? { duration: 0 }
-              : { type: "spring", stiffness: 300, damping: 30, duration: 0.25 },
-          },
+        closed: {
+          x: number;
+          y?: string | number;
+          opacity: number;
+          scale: number;
+          pointerEvents: "auto" | "none";
+          transition: {
+            duration?: number;
+            type?: string;
+            stiffness?: number;
+            damping?: number;
+          };
         };
-      }
+      } = isMobile
+        ? {
+            open: {
+              x: 10,
+              y: 0,
+              opacity: 1,
+              scale: 1,
+              pointerEvents: "auto",
+              transition: disableAnimation
+                ? { duration: 0 }
+                : { type: "spring", stiffness: 300, damping: 30 },
+            },
+            closed: {
+              x: isMobile ? 0 : 40,
+              y: "-100%",
+              opacity: 0,
+              scale: 0.95,
+              pointerEvents: "none",
+              transition: disableAnimation
+                ? { duration: 0 }
+                : { type: "spring", stiffness: 300, damping: 30, duration: 0.25 },
+            },
+          }
+        : {
+            open: {
+              x: 95,
+              opacity: 1,
+              scale: 1,
+              pointerEvents: "auto",
+              transition: disableAnimation
+                ? { duration: 0 }
+                : { type: "spring", stiffness: 300, damping: 30 },
+            },
+            closed: {
+              x: 40,
+              opacity: 0,
+              scale: 0.95,
+              pointerEvents: "none",
+              transition: disableAnimation
+                ? { duration: 0 }
+                : { type: "spring", stiffness: 300, damping: 30, duration: 0.25 },
+            },
+          };
+      return variants;
     }, [disableAnimation, isMobile]);
 
     const containerClass = useMemo(() => {
