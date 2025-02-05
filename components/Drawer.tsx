@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -16,7 +14,6 @@ const Drawer: React.FC<DrawerProps> = React.memo(
     const { accessibilityMode } = useAccessibilityStore();
     const [isMobile, setIsMobile] = useState(false);
 
-    // 화면 크기에 따라 모바일/태블릿 환경 여부 판단 (최대 너비 768px 이하)
     useEffect(() => {
       const mq = window.matchMedia("(max-width: 768px)");
       setIsMobile(mq.matches);
@@ -25,7 +22,6 @@ const Drawer: React.FC<DrawerProps> = React.memo(
       return () => mq.removeEventListener("change", handler);
     }, []);
 
-    // 모바일이면 y축 애니메이션, 데스크탑이면 기존 x축 애니메이션 사용
     const containerVariants = useMemo(() => {
       if (isMobile) {
         return {
@@ -34,6 +30,7 @@ const Drawer: React.FC<DrawerProps> = React.memo(
             y: 0,
             opacity: 1,
             scale: 1,
+            pointerEvents: "auto",
             transition: disableAnimation
               ? { duration: 0 }
               : { type: "spring", stiffness: 300, damping: 30 },
@@ -43,6 +40,7 @@ const Drawer: React.FC<DrawerProps> = React.memo(
             y: "-100%",
             opacity: 0,
             scale: 0.95,
+            pointerEvents: "none",
             transition: disableAnimation
               ? { duration: 0 }
               : { type: "spring", stiffness: 300, damping: 30, duration: 0.25 },
@@ -54,6 +52,7 @@ const Drawer: React.FC<DrawerProps> = React.memo(
             x: 95,
             opacity: 1,
             scale: 1,
+            pointerEvents: "auto",
             transition: disableAnimation
               ? { duration: 0 }
               : { type: "spring", stiffness: 300, damping: 30 },
@@ -62,6 +61,7 @@ const Drawer: React.FC<DrawerProps> = React.memo(
             x: 40,
             opacity: 0,
             scale: 0.95,
+            pointerEvents: "none",
             transition: disableAnimation
               ? { duration: 0 }
               : { type: "spring", stiffness: 300, damping: 30, duration: 0.25 },
@@ -70,7 +70,6 @@ const Drawer: React.FC<DrawerProps> = React.memo(
       }
     }, [disableAnimation, isMobile]);
 
-    // 모바일에서는 헤더 밑에, 데스크탑에서는 기존처럼 왼쪽 상단에 위치
     const containerClass = useMemo(() => {
       return isMobile
         ? "absolute top-full left-0 w-full pl-4 flex flex-col overflow-hidden bg-white"
@@ -104,7 +103,6 @@ const Drawer: React.FC<DrawerProps> = React.memo(
                 <Link
                   href={cat.path}
                   onClick={() => {
-                    // 내비게이션 전에 애니메이션 끄기
                     onClose();
                   }}
                   className={isMobile ? "block w-full text-left py-2" : ""}
