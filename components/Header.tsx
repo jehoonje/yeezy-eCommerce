@@ -94,7 +94,7 @@ const Header: React.FC = () => {
   }, [disableAnimation, isMainPage, openDrawer, isZoomMode, gridState]);
 
   return (
-    <header className="relative sticky top-0 flex items-center justify-between px-4 py-3 h-12 bg-transparent">
+    <header className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 h-12 bg-transparent">
       <div className="flex w-full items-center">
         <summary
           className={`menu-button z-30 ${
@@ -136,6 +136,9 @@ const Header: React.FC = () => {
             </button>
           )}
       </div>
+
+      {/* 가운데 공간 확보를 위해 flex-1 추가 */}
+      <div className="flex-1"></div>
 
       <div className="flex-shrink-0">
         <button
