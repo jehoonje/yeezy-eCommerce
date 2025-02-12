@@ -1,10 +1,11 @@
-'use client';
+"use client";
 
 import React, { useCallback, useEffect, useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import useAccessibilityStore from "../store/accessibilityStore";
 import useZoomStore from "../store/zoomStore";
-import useGridStore from "../store/useGridStore"; // 새로 만든 store
+import useDrawerStore from "../store/drawerStore";
+import useGridStore from "../store/useGridStore";
 import dynamic from "next/dynamic";
 import { FiPlus, FiShoppingCart, FiArrowLeft } from "react-icons/fi";
 import "./HamburgerMenu.scss";
@@ -25,7 +26,7 @@ const Header: React.FC = () => {
   // 메인 페이지 여부 (홈 페이지는 항상 "/")
   const isMainPage = pathname === "/";
 
-  const [openDrawer, setOpenDrawer] = React.useState(false);
+  const { openDrawer, setOpenDrawer } = useDrawerStore();
   const [disableAnimation, setDisableAnimation] = React.useState(false);
 
   useEffect(() => {
@@ -35,9 +36,8 @@ const Header: React.FC = () => {
     } else {
       setDisableAnimation(false);
     }
-  }, [isMainPage]);
+  }, [isMainPage, setOpenDrawer]);
 
-  // 왼쪽 버튼 클릭
   const handleHamburgerClick = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
@@ -47,17 +47,25 @@ const Header: React.FC = () => {
         setZoomMode(false);
       } else if (isMainPage) {
         if (gridState !== "grid9") {
-          // 뒤로가기: gridState가 grid1이면 grid3로, gridState가 grid3이면 grid9로 전환
           backGridState();
         } else {
-          setOpenDrawer((prev) => !prev);
+          setOpenDrawer(!openDrawer); // ✅ Zustand 상태 변경
         }
       } else {
         setDisableAnimation(true);
         router.back();
       }
     },
-    [isZoomMode, isMainPage, gridState, router, setZoomMode, backGridState]
+    [
+      isZoomMode,
+      isMainPage,
+      gridState,
+      router,
+      setZoomMode,
+      backGridState,
+      openDrawer,
+      setOpenDrawer,
+    ]
   );
 
   // 플러스 버튼 클릭
@@ -86,14 +94,18 @@ const Header: React.FC = () => {
   }, [disableAnimation, isMainPage, openDrawer, isZoomMode, gridState]);
 
   return (
-    <header className="relative sticky top-0 flex items-center justify-between px-6 py-3 h-12 bg-white">
+    <header className="relative sticky top-0 flex items-center justify-between px-4 py-3 h-12 bg-transparent">
       <div className="flex w-full items-center">
         <summary
           className={`menu-button z-30 ${
             accessibilityMode ? "bg-[#dadada]" : "bg-contrast"
-          } ${effectiveHamburgerClass} ${disableAnimation ? "no-animation" : ""}`}
+          } ${effectiveHamburgerClass} ${
+            disableAnimation ? "no-animation" : ""
+          }`}
           aria-haspopup="dialog"
-          aria-label={isZoomMode || gridState !== "grid9" ? "뒤로가기" : "Open Menu"}
+          aria-label={
+            isZoomMode || gridState !== "grid9" ? "뒤로가기" : "Open Menu"
+          }
           data-type="menu"
           role="button"
           onClick={handleHamburgerClick}
@@ -111,21 +123,29 @@ const Header: React.FC = () => {
         </summary>
 
         {/* 플러스 버튼: gridState가 "grid9" 또는 "grid3"일 때만 보임 */}
-        {isMainPage && !openDrawer && !disableAnimation && !isZoomMode && (gridState === "grid9" || gridState === "grid3") && (
-          <button className="ml-1 p-2 z-9999 focus:outline-none" onClick={handlePlusClick}>
-            <FiPlus size={22} />
-          </button>
-        )}
+        {isMainPage &&
+          !openDrawer &&
+          !disableAnimation &&
+          !isZoomMode &&
+          (gridState === "grid9" || gridState === "grid3") && (
+            <button
+              className="ml-1 p-2 z-9999 focus:outline-none"
+              onClick={handlePlusClick}
+            >
+              <FiPlus size={22} />
+            </button>
+          )}
       </div>
 
       <div className="flex-shrink-0">
         <button
-          className={`p-2 focus:outline-none ${
+          className={`flex items-center space-x-2 p-2 focus:outline-none ${
             accessibilityMode ? "bg-[#dadada]" : ""
           }`}
           onClick={(e) => handleNavigation("/cart", e)}
         >
-          <FiShoppingCart size={24} />
+          <FiShoppingCart size={20} />
+          <span>0</span>
         </button>
       </div>
 
