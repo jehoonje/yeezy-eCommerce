@@ -25,6 +25,7 @@ const Home: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [zoomReady, setZoomReady] = useState(false);
   const [selectedImageMounted, setSelectedImageMounted] = useState(false);
+  const [prevScrollY, setPrevScrollY] = useState<number>(0);
 
   const selectedImageRef = useRef<HTMLDivElement | null>(null);
   const setSelectedImageRef = useCallback((el: HTMLDivElement | null) => {
@@ -34,6 +35,16 @@ const Home: React.FC = () => {
       setSelectedImageMounted(true);
     }
   }, []);
+
+  useEffect(() => {
+    // isZoomMode가 false가 되면(=줌 모드 해제) 이전 스크롤 위치로 복구
+    if (!isZoomMode) {
+      // AnimatePresence가 exit 애니메이션 처리하는 동안 약간의 지연
+      setTimeout(() => {
+        gsap.set(window, { scrollTo: { y: prevScrollY, autoKill: false } });
+      }, 100);
+    }
+  }, [isZoomMode, prevScrollY]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -149,12 +160,15 @@ const Home: React.FC = () => {
       const rect = selectedImageRef.current.getBoundingClientRect();
       const scrollTo =
         rect.top + window.scrollY - window.innerHeight / 2 + rect.height / 2;
+      console.log("useLayoutEffect - 선택된 이미지 위치:", rect);
+      console.log("useLayoutEffect - 계산된 scrollTo 값:", scrollTo);
 
       gsap.set(window, {
         scrollTo: { y: scrollTo, autoKill: false },
       });
 
       const fadeTimer = setTimeout(() => {
+        console.log("페이드인 시작");
         setZoomReady(true);
       }, 10);
 
