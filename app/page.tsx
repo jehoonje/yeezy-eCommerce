@@ -27,6 +27,7 @@ const Home: React.FC = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [zoomReady, setZoomReady] = useState(false);
   const [selectedImageMounted, setSelectedImageMounted] = useState(false);
+  const [prevScrollY, setPrevScrollY] = useState<number>(0);
 
   const selectedImageRef = useRef<HTMLDivElement | null>(null);
   const setSelectedImageRef = useCallback((el: HTMLDivElement | null) => {
@@ -36,6 +37,15 @@ const Home: React.FC = () => {
       setSelectedImageMounted(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (!isZoomMode) {
+      // 줌 모드 해제 후 스크롤 위치 복귀
+      setTimeout(() => {
+        gsap.set(window, { scrollTo: { y: prevScrollY, autoKill: false } });
+      }, 50);
+    }
+  }, [isZoomMode]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -122,14 +132,20 @@ const Home: React.FC = () => {
   const zoomVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { duration: 0.3, ease: "easeOut" } },
-    exit: { opacity: 0, scale: 0.7, transition: { duration: 0.3, ease: "easeIn" } },
+    exit: {
+      opacity: 0,
+      scale: 0.7,
+      transition: { duration: 0.3, ease: "easeIn" },
+    },
   };
 
   const handleImageClick = useCallback(
     (img: string) => {
       if (isMobile === null) return; // 초기 상태일 때 클릭 방지
       if (isMobile && gridState === "grid1") return;
-      console.log("이미지 클릭:", img);
+
+      // 현재 스크롤 위치 저장
+      setPrevScrollY(window.scrollY);
       setSelectedImage(img);
       setSelectedImageMounted(false);
       setZoomMode(true);
@@ -146,7 +162,6 @@ const Home: React.FC = () => {
       document.documentElement.style.overflow = "auto";
     }
   }, [gridState, openDrawer, isZoomMode]);
-  
 
   useLayoutEffect(() => {
     if (
@@ -173,6 +188,17 @@ const Home: React.FC = () => {
       return () => clearTimeout(fadeTimer);
     }
   }, [isZoomMode, selectedImage, selectedImageMounted, setZoomMode]);
+
+
+useEffect(() => {
+  // isZoomMode가 false가 되면(=줌 모드 해제) 이전 스크롤 위치로 복구
+  if (!isZoomMode) {
+    // AnimatePresence가 exit 애니메이션 처리하는 동안 약간의 지연
+    setTimeout(() => {
+      gsap.set(window, { scrollTo: { y: prevScrollY, autoKill: false } });
+    }, 100);
+  }
+}, [isZoomMode, prevScrollY]);
 
   return (
     <div className="min-h-screen flex flex-col justify-start items-center pt-12 p-4">
@@ -203,13 +229,12 @@ const Home: React.FC = () => {
             variants={zoomVariants}
             initial="hidden"
             animate={zoomReady ? "visible" : "hidden"}
-            exit="exit" 
+            exit="exit"
           >
             {allImages.map((img) => (
               <motion.div
                 key={`zoom-${img}`}
-                style={{ marginBottom: "16px" 
-                }}
+                style={{ marginBottom: "16px" }}
                 ref={img === selectedImage ? setSelectedImageRef : null}
               >
                 <motion.img
