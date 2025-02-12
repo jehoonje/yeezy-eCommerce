@@ -9,7 +9,7 @@ const Accessibility: React.FC = () => {
   const { accessibilityMode, toggleAccessibility } = useAccessibilityStore();
 
   return (
-    <div className="min-h-screen flex justify-center leading-[1.5]">
+    <div className="min-h-screen flex justify-center pt-4 leading-[1.5]">
       <main className="max-w-[660px] mt-[40px] py-10 px-9">
         <div className="text-left">
           <p className="mb-10">ACCESSIBILITY</p>

@@ -7,10 +7,9 @@ import React, {
   useState,
   useEffect,
 } from "react";
-import { AnimatePresence, motion, MotionStyle } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import useZoomStore from "../store/zoomStore";
 import useGridStore from "../store/useGridStore";
-import useDrawerStore from "../store/drawerStore";
 import gsap from "gsap";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 gsap.registerPlugin(ScrollToPlugin);
@@ -22,12 +21,10 @@ const allImages = [...whiteImages, ...greyImages];
 const Home: React.FC = () => {
   const { isZoomMode, setZoomMode } = useZoomStore();
   const { gridState } = useGridStore();
-  const { openDrawer, setOpenDrawer } = useDrawerStore();
   const [isMobile, setIsMobile] = useState<boolean | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [zoomReady, setZoomReady] = useState(false);
   const [selectedImageMounted, setSelectedImageMounted] = useState(false);
-  const [prevScrollY, setPrevScrollY] = useState<number>(0);
 
   const selectedImageRef = useRef<HTMLDivElement | null>(null);
   const setSelectedImageRef = useCallback((el: HTMLDivElement | null) => {
@@ -37,15 +34,6 @@ const Home: React.FC = () => {
       setSelectedImageMounted(true);
     }
   }, []);
-
-  useEffect(() => {
-    if (!isZoomMode) {
-      // 줌 모드 해제 후 스크롤 위치 복귀
-      setTimeout(() => {
-        gsap.set(window, { scrollTo: { y: prevScrollY, autoKill: false } });
-      }, 50);
-    }
-  }, [isZoomMode]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -144,24 +132,12 @@ const Home: React.FC = () => {
       if (isMobile === null) return; // 초기 상태일 때 클릭 방지
       if (isMobile && gridState === "grid1") return;
 
-      // 현재 스크롤 위치 저장
-      setPrevScrollY(window.scrollY);
       setSelectedImage(img);
       setSelectedImageMounted(false);
       setZoomMode(true);
     },
     [setZoomMode, isMobile, gridState]
   );
-
-  useEffect(() => {
-    if (openDrawer || (gridState === "grid9" && !isZoomMode)) {
-      document.body.style.overflow = "hidden";
-      document.documentElement.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-      document.documentElement.style.overflow = "auto";
-    }
-  }, [gridState, openDrawer, isZoomMode]);
 
   useLayoutEffect(() => {
     if (
@@ -173,32 +149,18 @@ const Home: React.FC = () => {
       const rect = selectedImageRef.current.getBoundingClientRect();
       const scrollTo =
         rect.top + window.scrollY - window.innerHeight / 2 + rect.height / 2;
-      console.log("useLayoutEffect - 선택된 이미지 위치:", rect);
-      console.log("useLayoutEffect - 계산된 scrollTo 값:", scrollTo);
 
       gsap.set(window, {
         scrollTo: { y: scrollTo, autoKill: false },
       });
 
       const fadeTimer = setTimeout(() => {
-        console.log("페이드인 시작");
         setZoomReady(true);
       }, 10);
 
       return () => clearTimeout(fadeTimer);
     }
   }, [isZoomMode, selectedImage, selectedImageMounted, setZoomMode]);
-
-
-useEffect(() => {
-  // isZoomMode가 false가 되면(=줌 모드 해제) 이전 스크롤 위치로 복구
-  if (!isZoomMode) {
-    // AnimatePresence가 exit 애니메이션 처리하는 동안 약간의 지연
-    setTimeout(() => {
-      gsap.set(window, { scrollTo: { y: prevScrollY, autoKill: false } });
-    }, 100);
-  }
-}, [isZoomMode, prevScrollY]);
 
   return (
     <div className="min-h-screen flex flex-col justify-start items-center pt-12 p-4">

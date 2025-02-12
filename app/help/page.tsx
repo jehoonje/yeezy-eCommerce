@@ -4,7 +4,7 @@ import React from 'react';
 
 const Help: React.FC = () => {
   return (
-    <div className="min-h-screen flex justify-center leading-[1.5]">
+    <div className="min-h-screen flex justify-center pt-12 leading-[1.5]">
       <main className="max-w-[660px] py-8 px-9">
         <div className="text-left">
           <p className="mb-10">SUPPORT</p>
