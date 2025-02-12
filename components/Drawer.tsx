@@ -99,7 +99,7 @@ const Drawer: React.FC<DrawerProps> = React.memo(
     const containerClass = useMemo(() => {
       return isMobile
         ? "absolute top-full left-0 w-full pl-4 flex flex-col overflow-hidden bg-white"
-        : "absolute left-0 top-0 h-full flex items-center overflow-hidden bg-white";
+        : "absolute left-0 top-0 h-full flex items-center overflow-hidden bg-transparent";
     }, [isMobile]);
 
     const categories = [
@@ -120,8 +120,8 @@ const Drawer: React.FC<DrawerProps> = React.memo(
           <ul
             className={`${
               isMobile
-                ? "flex flex-col space-y-2 p-4"
-                : "flex text-md space-x-9 p-4"
+                ? "flex flex-col space-y-2 p-4 pt-5"
+                : "flex text-md space-x-9 p-4 pt-5"
             }`}
           >
             {categories.map((cat) => (
