@@ -138,13 +138,14 @@ const Home: React.FC = () => {
   );
 
   useEffect(() => {
-    if (gridState === "grid9" && openDrawer) {
-      console.log("grid9 - 스크롤 없애기");
+    if (openDrawer || (gridState === "grid9" && !isZoomMode)) {
       document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "auto";
+      document.documentElement.style.overflow = "auto";
     }
-  }, [gridState, openDrawer]);
+  }, [gridState, openDrawer, isZoomMode]);
   
 
   useLayoutEffect(() => {
@@ -174,7 +175,7 @@ const Home: React.FC = () => {
   }, [isZoomMode, selectedImage, selectedImageMounted, setZoomMode]);
 
   return (
-    <div className="min-h-screen flex flex-col justify-start items-center pt-14 p-4">
+    <div className="min-h-screen flex flex-col justify-start items-center pt-12 p-4">
       <AnimatePresence mode="wait">
         {!isZoomMode ? (
           <motion.div
