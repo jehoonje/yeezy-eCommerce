@@ -5,7 +5,7 @@ import React from 'react';
 
 const TermsOfService: React.FC = () => {
   return (
-    <div className="min-h-screen flex justify-center leading-[1.7]">
+    <div className="min-h-screen pt-4 flex justify-center leading-[1.7]">
     <main className="max-w-[660px] py-10 px-9">
       <div className="text-left">
           <p className="mt-2 mb-10">TERMS OF SERVICE</p>
