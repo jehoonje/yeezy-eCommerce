@@ -7,7 +7,7 @@ import React, {
   useState,
   useEffect,
 } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, MotionStyle } from "framer-motion";
 import useZoomStore from "../store/zoomStore";
 import useGridStore from "../store/useGridStore";
 import useDrawerStore from "../store/drawerStore";
@@ -71,45 +71,46 @@ const Home: React.FC = () => {
     },
   };
 
-  // grid 내 이미지 스타일 (gridState별)
-  const getGridImageStyle = useCallback(
-    (state: "grid9" | "grid3" | "grid1", img: string) => {
-      if (isMobile === null) return {}; // isMobile 값이 아직 설정되지 않았을 경우 기본 스타일 유지
+  import { AnimatePresence, motion, MotionStyle } from "framer-motion";
+import { useCallback } from "react";
 
-      const isSelected = selectedImage === img; // 현재 선택된 이미지인지 확인
+const getGridImageStyle = useCallback(
+  (state: "grid9" | "grid3" | "grid1", img: string): MotionStyle => {
+    if (isMobile === null) return {} as MotionStyle; // 기본 스타일 유지
 
-      switch (state) {
-        case "grid9":
-          return {
-            width: isMobile && isSelected ? "100%" : "100%", // 선택된 경우 모바일에서 100%
-            maxWidth: isMobile && isSelected ? "100%" : "200px",
-            // 정사각형 이미지라면 aspectRatio로 비율 유지 (다른 비율이면 height: 'auto'로 설정)
-            aspectRatio: "1 / 1",
-            objectFit: "cover",
-            cursor: "pointer",
-          };
-        case "grid3":
-          return {
-            width: isMobile && isSelected ? "100%" : "100%", // 선택된 경우 모바일에서 100%
-            maxWidth: isMobile && isSelected ? "100%" : "100%",
-            height: "auto",
-            objectFit: "cover",
-            cursor: "pointer",
-          };
-        case "grid1":
-          return {
-            width: window.innerWidth <= 768 ? "100%" : "50vw",
-            height: "auto",
-            objectFit: "contain",
-            pointerEvents: isMobile ? "none" : "auto",
-            cursor: isMobile ? "default" : "pointer",
-          };
-        default:
-          return {};
-      }
-    },
-    [isMobile, selectedImage]
-  );
+    const isSelected = selectedImage === img; // 현재 선택된 이미지인지 확인
+
+    switch (state) {
+      case "grid9":
+        return {
+          width: isMobile && isSelected ? "100%" : "100%",
+          maxWidth: isMobile && isSelected ? "100%" : "200px",
+          aspectRatio: "1 / 1" as unknown as MotionStyle["aspectRatio"], // 강제 변환
+          objectFit: "cover" as unknown as MotionStyle["objectFit"], // 강제 변환
+          cursor: "pointer",
+        } as MotionStyle;
+      case "grid3":
+        return {
+          width: isMobile && isSelected ? "100%" : "100%",
+          maxWidth: isMobile && isSelected ? "100%" : "100%",
+          height: "auto",
+          objectFit: "cover" as unknown as MotionStyle["objectFit"], // 강제 변환
+          cursor: "pointer",
+        } as MotionStyle;
+      case "grid1":
+        return {
+          width: window.innerWidth <= 768 ? "100%" : "50vw",
+          height: "auto",
+          objectFit: "contain" as unknown as MotionStyle["objectFit"], // 강제 변환
+          pointerEvents: isMobile ? "none" : "auto",
+          cursor: isMobile ? "default" : "pointer",
+        } as MotionStyle;
+      default:
+        return {} as MotionStyle;
+    }
+  },
+  [isMobile, selectedImage]
+);
 
   const gridVariants = {
     initial: { opacity: 1, scale: 1 },
