@@ -71,46 +71,44 @@ const Home: React.FC = () => {
     },
   };
 
-  import { AnimatePresence, motion, MotionStyle } from "framer-motion";
-import { useCallback } from "react";
+  // grid 내 이미지 스타일 (gridState별)
+  const getGridImageStyle = useCallback(
+    (state: "grid9" | "grid3" | "grid1", img: string): React.CSSProperties => {
+      if (isMobile === null) return {};
 
-const getGridImageStyle = useCallback(
-  (state: "grid9" | "grid3" | "grid1", img: string): MotionStyle => {
-    if (isMobile === null) return {} as MotionStyle; // 기본 스타일 유지
+      const isSelected = selectedImage === img;
 
-    const isSelected = selectedImage === img; // 현재 선택된 이미지인지 확인
-
-    switch (state) {
-      case "grid9":
-        return {
-          width: isMobile && isSelected ? "100%" : "100%",
-          maxWidth: isMobile && isSelected ? "100%" : "200px",
-          aspectRatio: "1 / 1" as unknown as MotionStyle["aspectRatio"], // 강제 변환
-          objectFit: "cover" as unknown as MotionStyle["objectFit"], // 강제 변환
-          cursor: "pointer",
-        } as MotionStyle;
-      case "grid3":
-        return {
-          width: isMobile && isSelected ? "100%" : "100%",
-          maxWidth: isMobile && isSelected ? "100%" : "100%",
-          height: "auto",
-          objectFit: "cover" as unknown as MotionStyle["objectFit"], // 강제 변환
-          cursor: "pointer",
-        } as MotionStyle;
-      case "grid1":
-        return {
-          width: window.innerWidth <= 768 ? "100%" : "50vw",
-          height: "auto",
-          objectFit: "contain" as unknown as MotionStyle["objectFit"], // 강제 변환
-          pointerEvents: isMobile ? "none" : "auto",
-          cursor: isMobile ? "default" : "pointer",
-        } as MotionStyle;
-      default:
-        return {} as MotionStyle;
-    }
-  },
-  [isMobile, selectedImage]
-);
+      switch (state) {
+        case "grid9":
+          return {
+            width: "100%",
+            maxWidth: isMobile && isSelected ? "100%" : "200px",
+            aspectRatio: "1 / 1",
+            objectFit: "cover",
+            cursor: "pointer",
+          };
+        case "grid3":
+          return {
+            width: "100%",
+            maxWidth: "100%",
+            height: "auto",
+            objectFit: "cover",
+            cursor: "pointer",
+          };
+        case "grid1":
+          return {
+            width: window.innerWidth <= 768 ? "100%" : "50vw",
+            height: "auto",
+            objectFit: "contain",
+            pointerEvents: isMobile ? "none" : "auto",
+            cursor: isMobile ? "default" : "pointer",
+          };
+        default:
+          return {};
+      }
+    },
+    [isMobile, selectedImage]
+  );
 
   const gridVariants = {
     initial: { opacity: 1, scale: 1 },
