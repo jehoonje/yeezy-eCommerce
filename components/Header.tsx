@@ -7,7 +7,7 @@ import useZoomStore from "../store/zoomStore";
 import useDrawerStore from "../store/drawerStore";
 import useGridStore from "../store/useGridStore";
 import dynamic from "next/dynamic";
-import { FiPlus, FiShoppingCart, FiArrowLeft } from "react-icons/fi";
+import { FiPlus, FiShoppingCart } from "react-icons/fi";
 import "./HamburgerMenu.scss";
 
 // Drawer는 기본적으로 그리드 모드(홈 페이지)일 때만 사용합니다.
@@ -49,7 +49,7 @@ const Header: React.FC = () => {
         if (gridState !== "grid9") {
           backGridState();
         } else {
-          setOpenDrawer(!openDrawer); // ✅ Zustand 상태 변경
+          setOpenDrawer(!openDrawer);
         }
       } else {
         setDisableAnimation(true);
@@ -68,29 +68,25 @@ const Header: React.FC = () => {
     ]
   );
 
-  // 플러스 버튼 클릭
+  // 플러스 버튼 클릭 시 gridState 변경과 함께 햄버거 아이콘도 변형되도록 함.
   const handlePlusClick = useCallback(() => {
     if (gridState === "grid9") {
       setGridState("grid3");
+      setOpenDrawer(false);
     } else if (gridState === "grid3") {
       setGridState("grid1");
     }
-  }, [gridState, setGridState]);
-
-  const handleNavigation = useCallback(
-    (path: string, e: React.MouseEvent) => {
-      e.stopPropagation();
-      setDisableAnimation(true);
-      router.push(path);
-    },
-    [router]
-  );
+  }, [gridState, setGridState, setOpenDrawer]);
 
   const effectiveHamburgerClass = useMemo(() => {
     if (disableAnimation) return "open";
-    if (isMainPage && !isZoomMode && gridState === "grid9")
-      return openDrawer ? "open" : "";
-    return "open";
+    if (isMainPage) {
+      // 선택 이미지(줌 모드)일 때도 open 상태 유지
+      if (isZoomMode) return "open";
+      if (gridState === "grid9") return openDrawer ? "open" : "";
+      return "open";
+    }
+    return "";
   }, [disableAnimation, isMainPage, openDrawer, isZoomMode, gridState]);
 
   return (
@@ -99,27 +95,19 @@ const Header: React.FC = () => {
         <summary
           className={`menu-button z-30 ${
             accessibilityMode ? "bg-[#dadada]" : "bg-contrast"
-          } ${effectiveHamburgerClass} ${
-            disableAnimation ? "no-animation" : ""
-          }`}
+          } ${effectiveHamburgerClass} ${disableAnimation ? "no-animation" : ""}`}
           aria-haspopup="dialog"
-          aria-label={
-            isZoomMode || gridState !== "grid9" ? "뒤로가기" : "Open Menu"
-          }
+          aria-label={openDrawer ? "메뉴 닫기" : "메뉴 열기"}
           data-type="menu"
           role="button"
           onClick={handleHamburgerClick}
         >
-          {isZoomMode || gridState !== "grid9" ? (
-            <FiArrowLeft size={24} />
-          ) : (
-            <div className="menu-button__icon-wrapper">
-              <div className="menu-button__icon">
-                <div className="menu-button__bar menu-button__bar--1"></div>
-                <div className="menu-button__bar menu-button__bar--2"></div>
-              </div>
+          <div className="menu-button__icon-wrapper">
+            <div className="menu-button__icon">
+              <div className="menu-button__bar menu-button__bar--1"></div>
+              <div className="menu-button__bar menu-button__bar--2"></div>
             </div>
-          )}
+          </div>
         </summary>
 
         {/* 플러스 버튼: gridState가 "grid9" 또는 "grid3"일 때만 보임 */}
@@ -137,7 +125,7 @@ const Header: React.FC = () => {
           )}
       </div>
 
-      {/* 가운데 공간 확보를 위해 flex-1 추가 */}
+      {/* 가운데 공간 확보 */}
       <div className="flex-1"></div>
 
       <div className="flex-shrink-0">
