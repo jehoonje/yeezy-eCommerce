@@ -18,6 +18,49 @@ const whiteImages = Array.from({ length: 18 }, (_, i) => `white-${i + 1}.webp`);
 const greyImages = Array.from({ length: 18 }, (_, i) => `grey-${i + 1}.webp`);
 const allImages = [...whiteImages, ...greyImages];
 
+const containerStyles: {
+  [key in "grid9" | "grid3" | "grid1"]: React.CSSProperties;
+} = {
+  grid9: {
+    display: "grid",
+    gridTemplateColumns: "repeat(9, 1fr)",
+    gap: "16px",
+    willChange: "transform, opacity",
+  },
+  grid3: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: "0px",
+    willChange: "transform, opacity",
+  },
+  grid1: {
+    display: "grid",
+    gridTemplateColumns: "1fr",
+    gap: "0px",
+    justifyItems: "center",
+    willChange: "transform, opacity",
+  },
+};
+
+const gridVariants = {
+  initial: { opacity: 1, scale: 1 },
+  exit: {
+    opacity: 0,
+    scale: 1.5,
+    transition: { duration: 0.2, ease: "easeIn" },
+  },
+};
+
+const zoomVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 0.2, ease: "easeOut" } },
+  exit: {
+    opacity: 0,
+    scale: 0.7,
+    transition: { duration: 0.2, ease: "easeIn" },
+  },
+};
+
 const Home: React.FC = () => {
   const { isZoomMode, setZoomMode } = useZoomStore();
   const { gridState } = useGridStore();
@@ -37,9 +80,7 @@ const Home: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // isZoomMode가 false가 되면(=줌 모드 해제) 이전 스크롤 위치로 복구
     if (!isZoomMode) {
-      // AnimatePresence가 exit 애니메이션 처리하는 동안 약간의 지연
       setTimeout(() => {
         gsap.set(window, { scrollTo: { y: prevScrollY, autoKill: false } });
       }, 100);
@@ -51,42 +92,17 @@ const Home: React.FC = () => {
       const handleResize = () => {
         setIsMobile(window.innerWidth <= 768);
       };
-
-      handleResize(); // 초기 렌더링 시 한 번 실행
+      handleResize();
       window.addEventListener("resize", handleResize);
       return () => window.removeEventListener("resize", handleResize);
     }
   }, []);
 
-  // grid 컨테이너 스타일
-  const containerStyles: {
-    [key in "grid9" | "grid3" | "grid1"]: React.CSSProperties;
-  } = {
-    grid9: {
-      display: "grid",
-      gridTemplateColumns: "repeat(9, 1fr)",
-      gap: "16px",
-    },
-    grid3: {
-      display: "grid",
-      gridTemplateColumns: "repeat(3, 1fr)",
-      gap: "0px",
-    },
-    grid1: {
-      display: "grid",
-      gridTemplateColumns: "1fr",
-      gap: "0px",
-      justifyItems: "center",
-    },
-  };
-
-  // grid 내 이미지 스타일 (gridState별)
   const getGridImageStyle = useCallback(
     (state: "grid9" | "grid3" | "grid1", img: string): React.CSSProperties => {
       if (isMobile === null) return {};
 
       const isSelected = selectedImage === img;
-
       switch (state) {
         case "grid9":
           return {
@@ -106,10 +122,10 @@ const Home: React.FC = () => {
           };
         case "grid1":
           return {
-            width: window.innerWidth <= 768 ? "100%" : "50vw",
+            width: isMobile ? "100%" : "50vw",
             height: "auto",
             objectFit: "contain",
-            pointerEvents: isMobile ? "none" : "auto",
+            pointerEvents: "none",
             cursor: isMobile ? "default" : "pointer",
           };
         default:
@@ -119,30 +135,11 @@ const Home: React.FC = () => {
     [isMobile, selectedImage]
   );
 
-  const gridVariants = {
-    initial: { opacity: 1, scale: 1 },
-    exit: {
-      opacity: 0,
-      scale: 1.5,
-      transition: { duration: 0.3, ease: "easeIn" },
-    },
-  };
-
-  const zoomVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { duration: 0.3, ease: "easeOut" } },
-    exit: {
-      opacity: 0,
-      scale: 0.7,
-      transition: { duration: 0.3, ease: "easeIn" },
-    },
-  };
-
   const handleImageClick = useCallback(
     (img: string) => {
-      if (isMobile === null) return; // 초기 상태일 때 클릭 방지
+      if (isMobile === null) return;
       if (isMobile && gridState === "grid1") return;
-
+      setPrevScrollY(window.scrollY);
       setSelectedImage(img);
       setSelectedImageMounted(false);
       setZoomMode(true);
@@ -162,17 +159,12 @@ const Home: React.FC = () => {
         rect.top + window.scrollY - window.innerHeight / 2 + rect.height / 2;
       console.log("useLayoutEffect - 선택된 이미지 위치:", rect);
       console.log("useLayoutEffect - 계산된 scrollTo 값:", scrollTo);
-
       gsap.set(window, {
         scrollTo: { y: scrollTo, autoKill: false },
       });
-
-      const fadeTimer = setTimeout(() => {
-        console.log("페이드인 시작");
+      requestAnimationFrame(() => {
         setZoomReady(true);
-      }, 10);
-
-      return () => clearTimeout(fadeTimer);
+      });
     }
   }, [isZoomMode, selectedImage, selectedImageMounted, setZoomMode]);
 
@@ -188,11 +180,12 @@ const Home: React.FC = () => {
             animate="initial"
             exit="exit"
           >
-            {allImages.map((img) => (
+            {allImages.map((img, idx) => (
               <motion.img
                 key={`grid-${gridState}-${img}`}
                 src={`/${img}`}
                 alt={img}
+                loading={idx === 0 ? "eager" : "lazy"}
                 onClick={() => handleImageClick(img)}
                 style={getGridImageStyle(gridState, img)}
               />
@@ -216,8 +209,9 @@ const Home: React.FC = () => {
                 <motion.img
                   src={`/${img}`}
                   alt={img}
+                  loading={img === selectedImage ? "eager" : "lazy"}
                   style={{
-                    width: window.innerWidth <= 768 ? "100%" : "50vw",
+                    width: isMobile ? "100%" : "50vw",
                     objectFit: "contain",
                     cursor: "pointer",
                   }}
