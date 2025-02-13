@@ -145,10 +145,10 @@ const Header: React.FC = () => {
           className={`flex items-center space-x-2 p-2 focus:outline-none ${
             accessibilityMode ? "bg-[#dadada]" : ""
           }`}
-          onClick={(e) => handleNavigation("/cart", e)}
+          onClick={() => alert("Not implemented!")}
         >
-          <FiShoppingCart size={20} />
-          <span>0</span>
+          <FiShoppingCart size={19} />
+          <span className="pt-1">0</span>
         </button>
       </div>
 
